@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -8,16 +9,17 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 //IP Range Updater
 
 namespace MistoxServer.Client {
-    public class mTCPClient {
+    public class mTCPClient : IDisposable {
 
         TcpClient Server;
 
         public event EventHandler onReceived;
-        bool Alive;
+        public bool Alive;
         bool notified = false;
 
         public mTCPClient( IPEndPoint ServerAddress ) {
             Server = new TcpClient();
+            Server.NoDelay = true;
             Server.Connect( ServerAddress );
             Alive = true;
             Thread RThread = new Thread(ReceiveThread);
@@ -25,18 +27,22 @@ namespace MistoxServer.Client {
         }
 
         void ReceiveThread() {
-            byte[] StreamData = new byte[1024];
-            while( Alive ) {
+            using( NetworkStream ns = Server.GetStream() ) {
                 try {
-                    if (Server.Connected && !notified ) {
-                        Console.WriteLine( "Connected to server" );
-                        notified = true;
-                    }
                     while( Alive ) {
-                        int bytesRead = Server.GetStream().Read(StreamData, 0, StreamData.Length);
-                        dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
-                        if( data != null ) {
-                            onReceived?.Invoke( data, new EventArgs() );
+                        if( Server.Connected && !notified ) {
+                            Console.WriteLine( "Connected to server" );
+                            notified = true;
+                        } else if( !Server.Connected ) {
+                            Console.WriteLine( "Disconnected from server" );
+                        }
+                        byte[] StreamData = new byte[1024];
+                        int bytesRead = ns.Read(StreamData, 0, StreamData.Length);
+                        if( bytesRead > 0 ) {
+                            dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
+                            if( data != null ) {
+                                onReceived?.Invoke( data, new EventArgs() );
+                            }
                         }
                     }
                 } catch( Exception e ) {

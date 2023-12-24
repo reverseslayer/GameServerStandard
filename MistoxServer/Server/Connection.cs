@@ -2,7 +2,6 @@
 using System.Net.Sockets;
 using System.Net;
 using MistoxServer.Client;
-using Newtonsoft.Json;
 
 namespace MistoxServer.Server {
 
@@ -10,7 +9,7 @@ namespace MistoxServer.Server {
         public int ID;
         public string UserName;
         public TcpClient slowClient;
-        public mUDPServer fastClient;
+        public mUDPClient fastClient;
 
         public event EventHandler onReceived;
         public event EventHandler onDisconnected;
@@ -18,7 +17,8 @@ namespace MistoxServer.Server {
         public Connection( TcpClient client ) {
             ID = new Random().Next( 1, 1000000 );
             slowClient = client;
-            fastClient = new mUDPServer( ( IPEndPoint )client.Client.RemoteEndPoint );
+            fastClient = new mUDPClient( ( IPEndPoint )client.Client.RemoteEndPoint );
+            client.NoDelay = true;
         }
 
         bool Alive = true;
@@ -28,9 +28,11 @@ namespace MistoxServer.Server {
                 try {
                     byte[] StreamData = new byte[1024];
                     int bytesRead = slowClient.GetStream().Read(StreamData, 0, StreamData.Length);
-                    dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
-                    if (data != null ) {
-                        onReceived?.Invoke( data, new EventArgs() );
+                    if( bytesRead > 0 ) {
+                        dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
+                        if( data != null ) {
+                            onReceived?.Invoke( data, new EventArgs() );
+                        }
                     }
                 } catch( Exception e ) {
                     Console.WriteLine( "A user has disconnected for reason : " + e.ToString() );

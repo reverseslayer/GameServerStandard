@@ -55,11 +55,15 @@ namespace MistoxServer {
                     int TotalLength = 8 + typeLength + dataLength;
                     if ( TBufferedData.Length >= TotalLength ) {
                         string typeData = Encoding.UTF8.GetString( TBufferedData.Sub(4, typeLength) );
-                        byte[] dataBytes = TBufferedData.Sub( (typeLength + 8), dataLength );
-                        dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
-                        TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
-                        Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
-                        return data;
+                        if ( typeData.Substring(0, 13) != "System.Object" ) {
+                            byte[] dataBytes = TBufferedData.Sub( (typeLength + 8), dataLength );
+                            dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
+                            TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
+                            Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
+                            return data;
+                        } else {
+                            TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
+                        }
                     }
                 }
             }

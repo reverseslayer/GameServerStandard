@@ -22,7 +22,6 @@ namespace MistoxServer {
             IPHostEntry host = Dns.GetHostEntry( ServerIP );
             IPEndPoint server = new IPEndPoint(host.AddressList[0], Port);
 
-            // Create the web network UDP client
             FastUpdate = new mUDPClient( server );
             FastUpdate.onReceived += onFastUpdateReceive;
 
