@@ -1,28 +1,20 @@
-﻿using MistoxServer.Client;
-using MistoxServer.Server;
+﻿using MistoxServer.Server;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MistoxServer {
     public class ServerInterface : IMistoxServer {
 
         public mTCPServer SlowUpdateServer;
-        public mUDPServer FastUpdateServer;
 
         public List<Connection> Connections = new List<Connection>();
 
         public event EventHandler onReceive;
+        public event EventHandler onDisconnect;
 
         public ServerInterface( int port ) {
             SlowUpdateServer = new mTCPServer( port );
-            FastUpdateServer = new mUDPServer( port );
-
             SlowUpdateServer.onConnected += OnConnected;
-            FastUpdateServer.onReceived += OnFastReceived;
         }
 
         void OnConnected( object sender, EventArgs e ) {
@@ -43,7 +35,9 @@ namespace MistoxServer {
         }
 
         void OnDisconnected( object sender, EventArgs e ) {
-
+            Connection user = (Connection)sender;
+            onDisconnect?.Invoke( sender, e );
+            Connections.Remove(user);
         }
 
         public void Send<Packet>( Packet data, SendType speed ) {
@@ -53,7 +47,7 @@ namespace MistoxServer {
                 }
             } else {
                 foreach( Connection cur in Connections ) {
-                    FastUpdateServer.Send( data, cur.remoteAddress.Address );
+                    cur.fastClient.Send( data );
                 }
             }
         }

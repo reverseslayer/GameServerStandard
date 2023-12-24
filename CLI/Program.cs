@@ -1,48 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
 using MistoxServer;
-using System.Runtime.InteropServices;
 
 namespace MistoxHolePunch {
     class Program {
 
         static IMistoxServer serverObj;
+        static bool running = true;
+
+        void RunServer( int Port ) {
+            Console.Clear();
+            serverObj = mServer.newServer( Convert.ToInt32( Port ) );
+            while ( running ) {
+                string x = Console.ReadLine();
+                serverObj.Send( x, SendType.SlowUpdate );
+            }
+        }
+
+        void RunClient( int Port ) {
+            Console.Clear();
+            serverObj = mServer.newClient( "DVR", Convert.ToInt32( Port ) );
+            while( running ) {
+                string x = Console.ReadLine();
+                serverObj.Send( x, SendType.SlowUpdate );
+            }
+        }
 
         static void Main(string[] args) {
             string Task = args.Length > 0 ? args[0].ToLower() : null;
-
             if (Task == "/?" || Task == "--help") {
                 Console.WriteLine(HelpDocumentation.HelpText);
             } else if (Task == "/s" || Task == "-s") {
-                Console.Clear();
-                serverObj = mServer.newServer();  
+                Program prog = new Program();
+                prog.RunServer( Convert.ToInt32( args [1] ) );
             } else if (Task == "/c" || Task == "-c") {
-                Console.Clear();
-                string IPAddress = args[1];
-                int Port = 25567;
-                string UserName = "username";
-                if (args.Length >= 2) {
-                    for (int i = 0; i < args.Length; i++) {
-                        string arg = args[i];
-                        if (arg == "/p" || arg == "-p") {
-                            Port = Convert.ToInt32(args[i + 1]);
-                        } else if (arg == "/u" || arg == "-u") {
-                            UserName = args[i + 1];
-                        }
-                    }
-                }
-                serverObj = mServer.newClient(IPAddress, Port, UserName);
-            } else if (Task == "/q" || Task == "-q") {
-                Console.WriteLine("The server or client has been stopped successfully");
-            } else if (Task == "/r" || Task == "-r") {
-                // Need to save args and then stop and start the server using old args
-                
+                Program prog = new Program();
+                prog.RunClient( Convert.ToInt32( args [1] ) );
             } else {
-                Console.WriteLine( "If you need help please type MistServer /?" );
-                //serverObj = mServer.newClient("mistox.net", 25567, "Mistox");
-                //serverObj = mServer.newServer();
-
-                Console.WriteLine( ConnectionStatics.IPV4 );
+                Program prog = new Program();
+                prog.RunClient(6500);
             }
         }
 

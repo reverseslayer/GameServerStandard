@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using MistoxServer.Client;
 
 // Client Connections
 
@@ -21,12 +16,13 @@ namespace MistoxServer.Server {
 
         public mTCPServer( int Port ) {
             port = Port;
-            Thread ConnectionThread = new Thread(ListenerThread);
-            ConnectionThread.Start();
+            Alive = true;
+            Thread ConnectionThreadv6 = new Thread(ListenerThreadV6);
+            ConnectionThreadv6.Start();
         }
 
-        void ListenerThread() {
-            Listener = new TcpListener( IPAddress.Any, port );
+        void ListenerThreadV6() {
+            Listener = new TcpListener( IPAddress.IPv6Any, port );
             Listener.Start();
             while( Alive ) {
                 TcpClient client = Listener.AcceptTcpClient();
@@ -34,7 +30,7 @@ namespace MistoxServer.Server {
                 Connection user = new Connection( client );
                 Thread receiveThread = new Thread(() => user.ReceiveThread(user));
                 receiveThread.Start();
-                onConnected.Invoke( user, new EventArgs() );
+                onConnected?.Invoke( user, new EventArgs() );
             }
         }
 

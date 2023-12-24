@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using MistoxServer;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 //IP Range Updater
 
@@ -16,32 +14,34 @@ namespace MistoxServer.Client {
 
         public event EventHandler onReceived;
         bool Alive;
+        bool notified = false;
 
         public mTCPClient( IPEndPoint ServerAddress ) {
-            Server = new TcpClient( ServerAddress );
+            Server = new TcpClient();
+            Server.Connect( ServerAddress );
             Alive = true;
             Thread RThread = new Thread(ReceiveThread);
             RThread.Start();
         }
 
         void ReceiveThread() {
+            byte[] StreamData = new byte[1024];
             while( Alive ) {
                 try {
-                    byte[] BufferedData = new byte[0];
+                    if (Server.Connected && !notified ) {
+                        Console.WriteLine( "Connected to server" );
+                        notified = true;
+                    }
                     while( Alive ) {
-                        byte[] StreamData = new byte[1024];
                         int bytesRead = Server.GetStream().Read(StreamData, 0, StreamData.Length);
-                        BufferedData.Join( StreamData );
-                        if( BufferedData.Length > 4 ) {
-                            int dataLength = BitConverter.ToInt32( BufferedData.Sub(0, 4) );
-                            if( BufferedData.Length >= dataLength + 4 ) {
-                                onReceived.Invoke( mSerialize.PacketDeserialize( BufferedData.Sub( 0, dataLength + 4 ) ), new EventArgs() );
-                                BufferedData.Sub( dataLength + 4, BufferedData.Length - (dataLength + 4) );
-                            }
+                        dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
+                        if( data != null ) {
+                            onReceived?.Invoke( data, new EventArgs() );
                         }
                     }
                 } catch( Exception e ) {
-                    Console.WriteLine( "A user has disconnected for reason : " + e.ToString() );
+                    Console.WriteLine( "You have disconnected from the server for reason : " + e );
+                    Alive = false;
                 }
             }
         }

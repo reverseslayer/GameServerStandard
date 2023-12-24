@@ -1,10 +1,6 @@
 ﻿using MistoxServer.Client;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MistoxServer {
     public class ClientInterface : IMistoxServer {
@@ -15,11 +11,11 @@ namespace MistoxServer {
         public event EventHandler onReceive;
 
         void onFastUpdateReceive(object packet, EventArgs e) {
-            onReceive.Invoke(packet, e);
+            onReceive?.Invoke(packet, e);
         }
 
         void onSlowUpdateReceive(object packet, EventArgs e ) {
-            onReceive.Invoke( packet, e );
+            onReceive?.Invoke( packet, e );
         }
 
         public ClientInterface( string ServerIP, int Port ) {
@@ -30,6 +26,8 @@ namespace MistoxServer {
             FastUpdate = new mUDPClient( server );
             FastUpdate.onReceived += onFastUpdateReceive;
 
+            Console.WriteLine( "The client is initilized and trying to connect to the server at ip : " + ServerIP );
+
             // Make a connection to the server
             try {
                 SlowUpdate = new mTCPClient( server );
@@ -39,8 +37,6 @@ namespace MistoxServer {
                 Console.WriteLine(e.ToString());
                 Console.WriteLine("}");
             }
-
-            Console.WriteLine("The client is initilized and trying to connect to the server at ip : " + ServerIP);
         }
 
         public void Send<Packet>(Packet data, SendType speed) {

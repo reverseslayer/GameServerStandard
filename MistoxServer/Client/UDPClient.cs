@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 // Network Sync
 
@@ -19,7 +16,7 @@ namespace MistoxServer.Client {
         bool Alive;
 
         public mUDPClient( IPEndPoint ServerAddress ) {
-            Server = new UdpClient( ServerAddress );
+            Server = new UdpClient( new IPEndPoint(IPAddress.Any, ServerAddress.Port) );
             ep = ServerAddress;
             Alive = true;
             Thread Client = new Thread(ReceiveThread);
@@ -29,16 +26,11 @@ namespace MistoxServer.Client {
         void ReceiveThread() {
             while( Alive ) {
                 try {
-                    byte[] BufferedData = new byte[0];
+                    IPEndPoint receive = new IPEndPoint( IPAddress.Any, ep.Port );
                     while( Alive ) {
-                        byte[] StreamData = Server.Receive( ref ep );
-                        BufferedData.Join( StreamData );
-                        if( BufferedData.Length > 4 ) {
-                            int dataLength = BitConverter.ToInt32( BufferedData.Sub(0, 4) );
-                            if( BufferedData.Length >= dataLength + 4 ) {
-                                onReceived.Invoke( mSerialize.PacketDeserialize( BufferedData.Sub( 0, dataLength + 4 ) ), new EventArgs() );
-                                BufferedData.Sub( dataLength + 4, BufferedData.Length - (dataLength + 4) );
-                            }
+                        dynamic data = mSerialize.uReceive( Server.Receive( ref ep ) );
+                        if( data != null ) {
+                            onReceived?.Invoke( data, new EventArgs() );
                         }
                     }
                 } catch( Exception e ) {
@@ -49,7 +41,7 @@ namespace MistoxServer.Client {
 
         public void Send<Packet>( Packet Data ) {
             byte[] byteData = mSerialize.PacketSerialize( Data );
-            Server.Send( byteData, byteData.Length );
+            Server.Send( byteData, byteData.Length, ep );
         }
 
         public void Dispose() {

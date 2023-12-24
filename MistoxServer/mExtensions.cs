@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.CodeDom;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Threading.Tasks;
+using MsgPack.Serialization;
+using Newtonsoft.Json;
 
 namespace MistoxServer {
 
@@ -29,34 +24,67 @@ namespace MistoxServer {
     }
 
     public class mSerialize {
-
-        public static byte [] PacketSerialize<T>( T Packet ) {
-            byte[] packetdata = Serialize(Packet);
-            byte[] length = BitConverter.GetBytes(packetdata.Length);
-            return length.Join( packetdata );
-        }
-
-        public static dynamic PacketDeserialize( byte[] Data ) {
-            int packetLength = BitConverter.ToInt32( Data.Sub( 0, 4) );
-            dynamic data = Deserialize( Data.Sub( 4, packetLength ));
-            return data;
-        }
-
-        static byte[] Serialize<T>( T obj ) {
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream() ) {
-                bf.Serialize( ms, obj );
-                return ms.ToArray();
+        public static byte[] PacketSerialize<T>( T Packet ) {
+            MessagePackSerializer serializer = MessagePackSerializer.Get<T>();
+            using( MemoryStream stream = new MemoryStream() ) {
+                serializer.Pack( stream, Packet );
+                byte[] typename = Encoding.UTF8.GetBytes(typeof(T).FullName + "," + typeof(T).Assembly.FullName);
+                byte[] typelength = BitConverter.GetBytes(typename.Length);
+                byte[] packetdata = stream.ToArray();
+                byte[] paketlength = BitConverter.GetBytes(packetdata.Length);
+                return typelength.Join( typename ).Join( paketlength ).Join( packetdata );
             }
         }
 
-        static dynamic Deserialize( byte [] obj ) {
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream() ) {
-                ms.Write( obj );
-                return bf.Deserialize( ms );
+        public static object PacketDeserialize( string typeData, byte[] Data ) {
+            Type type = Type.GetType( typeData );
+            MessagePackSerializer Serilizer = MessagePackSerializer.Get(type);
+
+            using( MemoryStream ms = new MemoryStream( Data ) ) {
+                return (object)Serilizer.Unpack( ms );
             }
         }
 
+        static byte[] TBufferedData = new byte[0];
+        public static dynamic tReceive( byte [] BytesRead ) {
+            TBufferedData = TBufferedData.Join( BytesRead );
+            if( TBufferedData.Length > 4 ) {
+                int typeLength = BitConverter.ToInt32( TBufferedData.Sub(0, 4) );
+                if( TBufferedData.Length > (8 + typeLength) ) {
+                    int dataLength = BitConverter.ToInt32( TBufferedData.Sub( typeLength + 4, 4 ) );
+                    int TotalLength = 8 + typeLength + dataLength;
+                    if ( TBufferedData.Length >= TotalLength ) {
+                        string typeData = Encoding.UTF8.GetString( TBufferedData.Sub(4, typeLength) );
+                        byte[] dataBytes = TBufferedData.Sub( (typeLength + 8), dataLength );
+                        dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
+                        TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
+                        Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
+                        return data;
+                    }
+                }
+            }
+            return null;
+        }
+
+        static byte[] UBufferedData = new byte[0];
+        public static dynamic uReceive( byte [] BytesRead ) {
+            UBufferedData = UBufferedData.Join( BytesRead );
+            if( UBufferedData.Length > 4 ) {
+                int typeLength = BitConverter.ToInt32( UBufferedData.Sub(0, 4) );
+                if( UBufferedData.Length > (8 + typeLength) ) {
+                    int dataLength = BitConverter.ToInt32( UBufferedData.Sub( typeLength + 4, 4 ) );
+                    int TotalLength = 8 + typeLength + dataLength;
+                    if( UBufferedData.Length >= TotalLength ) {
+                        string typeData = Encoding.UTF8.GetString( UBufferedData.Sub(4, typeLength) );
+                        byte[] dataBytes = UBufferedData.Sub( (typeLength + 8), dataLength );
+                        dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
+                        UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );
+                        Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
+                        return data;
+                    }
+                }
+            }
+            return null;
+        }
     }
 }
