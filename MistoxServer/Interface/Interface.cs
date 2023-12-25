@@ -4,7 +4,6 @@ using System.Net;
 namespace MistoxServer {
     public partial class mServer {
         public static IMistoxServer newServer(int port) {
-            Console.WriteLine("Initilizing server");
             return new ServerInterface(port);
         }
 
@@ -18,7 +17,6 @@ namespace MistoxServer {
             }
             string ipAddress = remoteAddress[index].ToString();
             if ( remoteAddress.Length > 0) {
-                Console.WriteLine("Initilizing connection to server at IP : " + ipAddress);
                 return new ClientInterface(ipAddress, Port);
             } else {
                 Console.WriteLine("The server at " + ServerIPOrHostName + " doesn't exit or cannot be found");

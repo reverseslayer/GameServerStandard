@@ -35,6 +35,7 @@ namespace MistoxServer.Client {
                             notified = true;
                         } else if( !Server.Connected ) {
                             Console.WriteLine( "Disconnected from server" );
+                            Alive = false;
                         }
                         byte[] StreamData = new byte[1024];
                         int bytesRead = ns.Read(StreamData, 0, StreamData.Length);

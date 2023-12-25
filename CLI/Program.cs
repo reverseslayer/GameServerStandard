@@ -12,7 +12,12 @@ namespace MistoxHolePunch {
             serverObj = mServer.newServer( Convert.ToInt32( Port ) );
             while ( running ) {
                 string x = Console.ReadLine();
-                serverObj.Send( x, SendType.SlowUpdate );
+                string result = x.Substring(0, 4);
+                if( result == "slow" ) {
+                    serverObj.Send( x.Substring(4), SendType.SlowUpdate );
+                } else {
+                    serverObj.Send( x, SendType.FastUpdate );
+                }
             }
         }
 
@@ -21,7 +26,12 @@ namespace MistoxHolePunch {
             serverObj = mServer.newClient( Host, Convert.ToInt32( Port ) );
             while( running ) {
                 string x = Console.ReadLine();
-                serverObj.Send( x, SendType.SlowUpdate );
+                string result = x.Substring(0, 4);
+                if( result == "slow" ) {
+                    serverObj.Send( x.Substring( 4 ), SendType.SlowUpdate );
+                } else {
+                    serverObj.Send( x, SendType.FastUpdate );
+                }
             }
         }
 
@@ -37,7 +47,7 @@ namespace MistoxHolePunch {
                 prog.RunClient( args [1], Convert.ToInt32( args [2] ) );
             } else {
                 Program prog = new Program();
-                prog.RunClient("DVR", 6500);
+                prog.RunServer(6500);
             }
         }
 

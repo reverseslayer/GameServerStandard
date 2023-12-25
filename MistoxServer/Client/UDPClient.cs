@@ -3,21 +3,27 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 // Network Sync
 
 namespace MistoxServer.Client {
     public class mUDPClient {
 
-        UdpClient Server;
-        IPEndPoint ep;
-
         public event EventHandler onReceived;
+
+        Socket udpClient;
         bool Alive;
 
         public mUDPClient( IPEndPoint ServerAddress ) {
-            Server = new UdpClient( new IPEndPoint(IPAddress.Any, ServerAddress.Port) );
-            ep = ServerAddress;
+            udpClient = new Socket( ServerAddress.AddressFamily, SocketType.Dgram, ProtocolType.Udp );
+            if (ServerAddress.AddressFamily == AddressFamily.InterNetwork ) {
+                udpClient.SetSocketOption( SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true );
+                udpClient.Bind( new IPEndPoint( IPAddress.Any, ServerAddress.Port ) );
+            } else if(ServerAddress.AddressFamily == AddressFamily.InterNetworkV6 ) {
+                udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.ReuseAddress, true );
+                udpClient.Bind( new IPEndPoint( IPAddress.IPv6Any, ServerAddress.Port ) );
+            }
             Alive = true;
             Thread Client = new Thread(ReceiveThread);
             Client.Start();
@@ -26,28 +32,27 @@ namespace MistoxServer.Client {
         void ReceiveThread() {
             while( Alive ) {
                 try {
-                    IPEndPoint receive = new IPEndPoint( IPAddress.Any, ep.Port );
-                    while( Alive ) {
-                        dynamic data = mSerialize.uReceive( Server.Receive( ref ep ) );
-                        if( data != null ) {
-                            onReceived?.Invoke( data, new EventArgs() );
-                        }
+                    byte[] buffer = new byte[1024];
+                    int bytesRead = udpClient.Receive( buffer );
+                    dynamic data = mSerialize.uReceive( buffer.Sub(0, bytesRead) );
+                    if( data != null ) {
+                        onReceived?.Invoke( data, new EventArgs() );
                     }
                 } catch( Exception e ) {
-                    Console.WriteLine( "A user has disconnected for reason : " + e.ToString() );
+
                 }
             }
         }
 
-        public void Send<Packet>( Packet Data ) {
+        public void Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
             byte[] byteData = mSerialize.PacketSerialize( Data );
-            Server.Send( byteData, byteData.Length, ep );
+            udpClient.SendTo( byteData, remoteHost );
         }
 
         public void Dispose() {
             Alive = false;
-            Server.Close();
-            Server = null;
+            udpClient.Close();
+            udpClient = null;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace MistoxServer {
                             byte[] dataBytes = TBufferedData.Sub( (typeLength + 8), dataLength );
                             dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
                             TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
-                            Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
+                            Console.WriteLine( "Received Tcp : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
                             return data;
                         } else {
                             TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
@@ -80,11 +80,15 @@ namespace MistoxServer {
                     int TotalLength = 8 + typeLength + dataLength;
                     if( UBufferedData.Length >= TotalLength ) {
                         string typeData = Encoding.UTF8.GetString( UBufferedData.Sub(4, typeLength) );
-                        byte[] dataBytes = UBufferedData.Sub( (typeLength + 8), dataLength );
-                        dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
-                        UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );
-                        Console.WriteLine( "Received : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
-                        return data;
+                        if( typeData.Substring( 0, 13 ) != "System.Object" ) {
+                            byte[] dataBytes = UBufferedData.Sub( (typeLength + 8), dataLength );
+                            dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
+                            UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );
+                            Console.WriteLine( "Received UDP : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
+                            return data;
+                        } else {
+                            UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );
+                        }
                     }
                 }
             }
