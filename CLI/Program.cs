@@ -102,9 +102,11 @@ namespace MistoxHolePunch {
                 Program prog = new Program();
                 prog.RunClient();
             } else {
-                //Program prog = new Program();
+                host = "mistox.net";
+                port = 6500;
+                Program prog = new Program();
                 //prog.RunClient();
-                //prog.RunServer();
+                prog.RunServer();
             }
         }
 

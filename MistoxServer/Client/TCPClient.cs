@@ -15,7 +15,7 @@ namespace MistoxServer.Client {
         bool notified = false;
 
         public mTCPClient( IPEndPoint ServerAddress ) {
-            Server = new TcpClient();
+            Server = new TcpClient( AddressFamily.InterNetwork );
             Server.NoDelay = true;
             Server.Connect( ServerAddress );
             Alive = true;

@@ -16,11 +16,10 @@ namespace MistoxServer.Client {
         int Port;
 
         public mUDPClient( IPEndPoint ServerAddress, ServerMode mode ) {
-            udpClient = new Socket( AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp );
-            udpClient.DualMode = true;
-            udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.ReuseAddress, true );
-            udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.IpTimeToLive, 128 );
-            udpClient.Bind( new IPEndPoint( IPAddress.IPv6Any, ServerAddress.Port ) );
+            udpClient = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
+            udpClient.SetSocketOption( SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true );
+            udpClient.SetSocketOption( SocketOptionLevel.IP, SocketOptionName.IpTimeToLive, 128 );
+            udpClient.Bind( new IPEndPoint( IPAddress.Any, ServerAddress.Port ) );
             Alive = true;
             Port = ServerAddress.Port;
             Mode = mode;

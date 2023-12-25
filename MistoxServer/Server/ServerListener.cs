@@ -26,8 +26,7 @@ namespace MistoxServer.Server {
         }
 
         void ListenerThread() {
-            Listener = new TcpListener( IPAddress.IPv6Any, port );
-            Listener.Server.DualMode = true;
+            Listener = new TcpListener( IPAddress.Any, port );
             Listener.Start();
             while( Alive ) {
                 TcpClient client = Listener.AcceptTcpClient();
