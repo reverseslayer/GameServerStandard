@@ -27,7 +27,8 @@ namespace MistoxServer {
 
     public interface IMistoxServer {
 
-        public event EventHandler onReceive;
+        public event EventHandler onSlowReceive;
+        public event EventHandler onFastReceive;
         public void Send<Packet>(Packet data, SendType speed);
 
     }

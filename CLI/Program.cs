@@ -7,9 +7,25 @@ namespace MistoxHolePunch {
         static IMistoxServer serverObj;
         static bool running = true;
 
+        void slowReceive( object obj, EventArgs e ) {
+            // Check to make sure data is correct before relaying
+            // Also perform server specific checks in here
+            // IE player didnt teleport or is shooting from 20 feet from his body
+            serverObj.Send( obj, SendType.SlowUpdate );
+        }
+
+        void fastReceive( object obj, EventArgs e ) {
+            // Check to make sure data is correct before relaying
+            // Also perform server specific checks in here
+            // IE player didnt teleport or is shooting from 20 feet from his body
+            serverObj.Send( obj, SendType.FastUpdate );
+        }
+
         void RunServer( int Port ) {
             Console.Clear();
             serverObj = mServer.newServer( Convert.ToInt32( Port ) );
+            serverObj.onSlowReceive += slowReceive;
+            serverObj.onFastReceive += fastReceive;
             while ( running ) {
                 string x = Console.ReadLine();
                 if( x.Length >= 4 ) {
@@ -28,6 +44,8 @@ namespace MistoxHolePunch {
         void RunClient( string Host, int Port ) {
             Console.Clear();
             serverObj = mServer.newClient( Host, Convert.ToInt32( Port ) );
+            serverObj.onSlowReceive += slowReceive;
+            serverObj.onFastReceive += fastReceive;
             while( running ) {
                 string x = Console.ReadLine();
                 if( x.Length >= 4 ) {
@@ -55,8 +73,8 @@ namespace MistoxHolePunch {
                 prog.RunClient( args [1], Convert.ToInt32( args [2] ) );
             } else {
                 Program prog = new Program();
-                //prog.RunClient("D-Workstation", 6500);
-                prog.RunServer( 6500 );
+                prog.RunClient("mistox.net", 6500);
+                //prog.RunServer( 6500 );
             }
         }
 

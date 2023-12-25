@@ -9,7 +9,8 @@ namespace MistoxServer {
         mUDPClient FastUpdate;
         IPEndPoint mPEndPoint;
 
-        public event EventHandler onReceive;
+        public event EventHandler onSlowReceive;
+        public event EventHandler onFastReceive;
 
         public ClientInterface( string IpOrHostName, int Port ) {
             // Get Server IP
@@ -25,7 +26,7 @@ namespace MistoxServer {
             // Make a UDP connection to the server
             try {
                 FastUpdate = new mUDPClient( mPEndPoint );
-                FastUpdate.onReceived += onFastUpdateReceive;
+                FastUpdate.onReceived += onFastReceive;
             } catch( Exception e ) {
                 Console.WriteLine( "An error has occured with the connection to the server. Error { " );
                 Console.WriteLine( e.ToString() );
@@ -34,20 +35,12 @@ namespace MistoxServer {
             // Make a TCP connection to the server
             try {
                 SlowUpdate = new mTCPClient( mPEndPoint );
-                SlowUpdate.onReceived += onSlowUpdateReceive;
+                SlowUpdate.onReceived += onSlowReceive;
             } catch( Exception e ) {
                 Console.WriteLine( "An error has occured with the connection to the server. Error { " );
                 Console.WriteLine( e.ToString() );
                 Console.WriteLine( "}" );
             }
-        }
-
-        void onFastUpdateReceive(object packet, EventArgs e) {
-            onReceive?.Invoke(packet, e);
-        }
-
-        void onSlowUpdateReceive(object packet, EventArgs e ) {
-            onReceive?.Invoke( packet, e );
         }
 
         public void Send<Packet>(Packet data, SendType speed) {

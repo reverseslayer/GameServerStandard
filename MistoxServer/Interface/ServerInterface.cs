@@ -12,14 +12,15 @@ namespace MistoxServer {
         mTCPListener SlowUpdateServer;
         List<Connection> Connections = new List<Connection>();
 
-        public event EventHandler onReceive;
+        public event EventHandler onSlowReceive;
+        public event EventHandler onFastReceive;
 
         public ServerInterface( int port ) {
             FastUpdateServer = new mUDPClient( new IPEndPoint( IPAddress.IPv6Any, port ) );
             SlowUpdateServer = new mTCPListener( port );
 
             SlowUpdateServer.onConnected += OnConnected;
-            FastUpdateServer.onReceived += onReceive;
+            FastUpdateServer.onReceived += onFastReceive;
             SlowUpdateServer.onDisconnected += OnDisconnected;
 
             Console.WriteLine( "The Server is initilized and waiting for clients to connect at port : " + port );
@@ -27,7 +28,7 @@ namespace MistoxServer {
 
         void OnConnected( object sender, EventArgs e ) {
             Connection user = (Connection)sender;
-            user.slowClient.onReceived += onReceive;
+            user.slowClient.onReceived += onSlowReceive;
             user.slowClient.onDisconnected += OnDisconnected;
             Connections.Add( user );
         }
