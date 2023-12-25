@@ -29,11 +29,16 @@ serverobj.Send( dynamic Object, SendType Speed )
 Receiving data
 ```c#
 
-serverobj.onSlowReceive += ReceivedData;
-serverobj.onSFastReceive += ReceivedData;
-void ReceivedData( object Data, EventArgs e ){
-  if (Data is Datatype){
-    DataType x = (DataType)Data;
+serverobj.onSlowReceive += SlowReceivedData;
+serverobj.onFastReceive += FastReceivedData;
+void SlowReceivedData( object Data, EventArgs e ){
+  if (Data is Datatype dt){
+    
+  }
+}
+void FastReceivedData( object Data, EventArgs e ){
+  if (Data is Datatype dt){
+    
   }
 }
 ```
