@@ -28,9 +28,9 @@ serverobj.Send( dynamic Object, SendType Speed )
 
 Receiving data
 ```c#
+
 serverobj.onSlowReceive += ReceivedData;
 serverobj.onSFastReceive += ReceivedData;
-
 void ReceivedData( object Data, EventArgs e ){
   if (Data is Datatype){
     DataType x = (DataType)Data;
@@ -59,3 +59,5 @@ reference the library for the networked data types
 All Credits to Derek Holloway
 
 ## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
