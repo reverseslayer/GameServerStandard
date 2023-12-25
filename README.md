@@ -13,7 +13,7 @@ Note: All datatypes that are sent to the server, The server needs to be aware of
 
 Create the server
 ```c#
-IMistoxServer serverobj = mServer.newServer( int Port )
+IMistoxServer serverobj = mServer.newServer( int Port, ServerMode mode )
 ```
 
 Create the client
@@ -32,24 +32,41 @@ Receiving data
 serverobj.onSlowReceive += SlowReceivedData;
 serverobj.onFastReceive += FastReceivedData;
 void SlowReceivedData( object Data, EventArgs e ){
-  if (Data is Datatype dt){
+  if (Data is Datatype dt){ // Only works in Athoritative mode on server | will always work on client
     
   }
 }
 void FastReceivedData( object Data, EventArgs e ){
-  if (Data is Datatype dt){
+  if (Data is Datatype dt){ // Only works in Athoritative mode on server | will always work on client
     
   }
 }
 ```
 
 SendType  *Enumeration
-   Where SlowUpdate is sent over TCP
-   And FastUpate is sent over UDP
+  Where SlowUpdate is sent over TCP
+  And FastUpate is sent over UDP
 ```c#
 public enum SendType {
     SlowUpdate,
     FastUpdate
+}
+```
+
+ServerMode *Enumeration
+  The Servermode tells the server if it should Deserialize examine then Reserialize the data passing through.
+  This can be useful to make sure data is
+    1 actually belonging to the server
+    2 the ability to keep track of objects within the server [ prevent cheating ]
+  This requires alot of overhead on the server though.
+
+  Passive doesnt use a serdes and instead just passes the data in and out
+  Athoritative will Deserialize and Serialize the data
+  Refer to the CLI/Program.CS for reference
+```c#
+public enum ServerMode {
+    Passive,
+    Authoritative
 }
 ```
 
