@@ -34,7 +34,7 @@ namespace MistoxServer.Server {
                         }
                     }
                 } catch( Exception e ) {
-                    Console.WriteLine( "A user has disconnected for reason : " + e.ToString() );
+                    Console.WriteLine( "User disconnected" );
                     connected = false;
                     onDisconnected?.Invoke( Client, new EventArgs() );
                 }

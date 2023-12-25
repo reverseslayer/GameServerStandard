@@ -47,7 +47,7 @@ namespace MistoxServer.Client {
                         }
                     }
                 } catch( Exception e ) {
-                    Console.WriteLine( "You have disconnected from the server for reason : " + e );
+                    Console.WriteLine( "You have disconnected from the server" );
                     Alive = false;
                 }
             }

@@ -15,6 +15,7 @@ namespace MistoxServer.Client {
 
         Socket udpClient;
         bool Alive;
+        int Port;
 
         public mUDPClient( IPEndPoint ServerAddress ) {
             udpClient = new Socket( AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp );
@@ -23,6 +24,7 @@ namespace MistoxServer.Client {
             udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.IpTimeToLive, 128 );
             udpClient.Bind( new IPEndPoint( IPAddress.IPv6Any, ServerAddress.Port ) );
             Alive = true;
+            Port = ServerAddress.Port;
             Thread Client = new Thread(ReceiveThread);
             Client.Start();
         }
@@ -44,7 +46,7 @@ namespace MistoxServer.Client {
 
         public void Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
             byte[] byteData = mSerialize.PacketSerialize( Data );
-            udpClient.SendTo( byteData, new IPEndPoint( remoteHost.Address, 6500 ) );
+            udpClient.SendTo( byteData, new IPEndPoint( remoteHost.Address, Port ) );
         }
 
         public void Dispose() {
