@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.IO;
+using System.Net;
 using System.Text;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
@@ -94,5 +95,10 @@ namespace MistoxServer {
             }
             return null;
         }
+    }
+
+    public class ConnectionPacket {
+        public string Name { get; set; }
+        public IPEndPoint clientHost { get; set; }
     }
 }

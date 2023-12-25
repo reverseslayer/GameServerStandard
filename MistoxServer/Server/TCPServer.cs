@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MistoxServer.Server {
-    public class mTCPServer {
+    public class mTCPServer : IDisposable {
         public TcpClient slowClient;
 
         public event EventHandler onReceived;
@@ -17,7 +17,7 @@ namespace MistoxServer.Server {
 
         public mTCPServer( TcpClient client ) {
             slowClient = client;
-            client.NoDelay = true;
+            slowClient.Client.NoDelay = true;
         }
 
         bool Alive = true;

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 // Network Sync
 
 namespace MistoxServer.Client {
-    public class mUDPClient {
+    public class mUDPClient : IDisposable {
 
         public event EventHandler onReceived;
 
@@ -16,14 +17,11 @@ namespace MistoxServer.Client {
         bool Alive;
 
         public mUDPClient( IPEndPoint ServerAddress ) {
-            udpClient = new Socket( ServerAddress.AddressFamily, SocketType.Dgram, ProtocolType.Udp );
-            if (ServerAddress.AddressFamily == AddressFamily.InterNetwork ) {
-                udpClient.SetSocketOption( SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true );
-                udpClient.Bind( new IPEndPoint( IPAddress.Any, ServerAddress.Port ) );
-            } else if(ServerAddress.AddressFamily == AddressFamily.InterNetworkV6 ) {
-                udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.ReuseAddress, true );
-                udpClient.Bind( new IPEndPoint( IPAddress.IPv6Any, ServerAddress.Port ) );
-            }
+            udpClient = new Socket( AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp );
+            udpClient.DualMode = true;
+            udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.ReuseAddress, true );
+            udpClient.SetSocketOption( SocketOptionLevel.IPv6, SocketOptionName.IpTimeToLive, 128 );
+            udpClient.Bind( new IPEndPoint( IPAddress.IPv6Any, ServerAddress.Port ) );
             Alive = true;
             Thread Client = new Thread(ReceiveThread);
             Client.Start();
@@ -46,7 +44,7 @@ namespace MistoxServer.Client {
 
         public void Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
             byte[] byteData = mSerialize.PacketSerialize( Data );
-            udpClient.SendTo( byteData, remoteHost );
+            udpClient.SendTo( byteData, new IPEndPoint( remoteHost.Address, 6500 ) );
         }
 
         public void Dispose() {

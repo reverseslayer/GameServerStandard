@@ -7,7 +7,7 @@ using System.Threading;
 // Client Connections
 
 namespace MistoxServer.Server {
-    public class mTCPListener {
+    public class mTCPListener : IDisposable {
 
         public event EventHandler onConnected;
         public event EventHandler onDisconnected;
@@ -20,44 +20,31 @@ namespace MistoxServer.Server {
         public mTCPListener( int Port ) {
             port = Port;
             Alive = true;
-            Thread ConnectionThreadv6 = new Thread(ListenerThreadV6);
-            ConnectionThreadv6.Start();
-            Thread ConnectionThreadv4 = new Thread(ListenerThread);
-            ConnectionThreadv4.Start();
-        }
-
-        void ListenerRoutine() {
-            TcpClient client = Listener.AcceptTcpClient();
-
-            Connection user = new Connection(){
-                slowClient = new mTCPServer(client),
-                fastClient = (IPEndPoint)client.Client.RemoteEndPoint,
-                ID = new Random().Next(1, 10000000)
-            };
-
-            onConnected?.Invoke( user, new EventArgs() );
-            user.slowClient.onDisconnected += onDisconnected;
-            user.slowClient.onReceived += onReceive;
-
-            Thread receiveThread = new Thread(() => user.slowClient.ReceiveThread(user));
-            receiveThread.Start();
-
-            Console.WriteLine( "New User Connected" );
-        }
-
-        void ListenerThreadV6() {
-            Listener = new TcpListener( IPAddress.IPv6Any, port );
-            Listener.Start();
-            while( Alive ) {
-                ListenerRoutine();
-            }
+            Thread ConnectionThread = new Thread(ListenerThread);
+            ConnectionThread.Start();
         }
 
         void ListenerThread() {
-            Listener = new TcpListener( IPAddress.Any, port );
+            Listener = new TcpListener( IPAddress.IPv6Any, port );
+            Listener.Server.DualMode = true;
             Listener.Start();
             while( Alive ) {
-                ListenerRoutine();
+                TcpClient client = Listener.AcceptTcpClient();
+
+                Connection user = new Connection(){
+                    slowClient = new mTCPServer(client),
+                    fastClient = new IPEndPoint( ((IPEndPoint)client.Client.RemoteEndPoint).Address, port ),
+                    ID = new Random().Next(1, 10000000),
+                };
+
+                Console.WriteLine( "New User Connected" );
+
+                onConnected?.Invoke( user, new EventArgs() );
+                user.slowClient.onDisconnected += onDisconnected;
+                user.slowClient.onReceived += onReceive;
+
+                Thread receiveThread = new Thread(() => user.slowClient.ReceiveThread(user));
+                receiveThread.Start();
             }
         }
 

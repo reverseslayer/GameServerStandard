@@ -14,10 +14,14 @@ namespace MistoxServer {
         public ClientInterface( string IpOrHostName, int Port ) {
             // Get Server IP
             IPHostEntry host = Dns.GetHostEntry( IpOrHostName );
-            mPEndPoint = new IPEndPoint(host.AddressList[0], Port);
+
+            foreach( IPAddress entry in host.AddressList ) {
+                if ( entry.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {
+                    mPEndPoint = new IPEndPoint( entry, Port );
+                }
+            }
 
             Console.WriteLine( "The client is initilized and trying to connect to the server at ip : " + mPEndPoint.Address );
-
             // Make a UDP connection to the server
             try {
                 FastUpdate = new mUDPClient( mPEndPoint );
@@ -27,7 +31,6 @@ namespace MistoxServer {
                 Console.WriteLine( e.ToString() );
                 Console.WriteLine( "}" );
             }
-
             // Make a TCP connection to the server
             try {
                 SlowUpdate = new mTCPClient( mPEndPoint );
