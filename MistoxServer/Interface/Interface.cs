@@ -3,8 +3,8 @@ using System.Net;
 
 namespace MistoxServer {
     public partial class mServer {
-        public static IMistoxServer newServer(int port) {
-            return new ServerInterface(port);
+        public static IMistoxServer newServer(int port, ServerMode mode) {
+            return new ServerInterface(port, mode);
         }
 
         public static IMistoxServer newClient(string ServerIPOrHostName, int Port) {
@@ -36,6 +36,11 @@ namespace MistoxServer {
     public enum SendType {
         SlowUpdate,
         FastUpdate
+    }
+
+    public enum ServerMode {
+        Passive,
+        Authoritative
     }
 
 }

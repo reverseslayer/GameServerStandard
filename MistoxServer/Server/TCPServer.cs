@@ -1,23 +1,18 @@
-﻿using MistoxServer.Server;
-using MistoxServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MistoxServer.Server {
     public class mTCPServer : IDisposable {
         public TcpClient slowClient;
+        ServerMode Mode;
 
         public event EventHandler onReceived;
         public event EventHandler onDisconnected;
 
-        public mTCPServer( TcpClient client ) {
+        public mTCPServer( TcpClient client, ServerMode mode ) {
             slowClient = client;
             slowClient.Client.NoDelay = true;
+            Mode = mode;
         }
 
         bool Alive = true;
@@ -28,12 +23,16 @@ namespace MistoxServer.Server {
                     byte[] StreamData = new byte[1024];
                     int bytesRead = slowClient.GetStream().Read(StreamData, 0, StreamData.Length);
                     if( bytesRead > 0 ) {
-                        dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
-                        if( data != null ) {
-                            onReceived?.Invoke( data, new EventArgs() );
+                        if ( Mode == ServerMode.Passive) {
+                            onReceived?.Invoke( StreamData.Sub( 0, bytesRead ), new EventArgs() );
+                        } else if ( Mode == ServerMode.Authoritative) {
+                            dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
+                            if( data != null ) {
+                                onReceived?.Invoke( data, new EventArgs() );
+                            }
                         }
                     }
-                } catch( Exception e ) {
+                } catch( Exception ) {
                     Console.WriteLine( "User disconnected" );
                     connected = false;
                     onDisconnected?.Invoke( Client, new EventArgs() );
@@ -42,8 +41,13 @@ namespace MistoxServer.Server {
         }
 
         public void Send<T>( T packet ) {
-            byte[] data = mSerialize.PacketSerialize( packet );
-            slowClient.GetStream().Write( data, 0, data.Length );
+            if( Mode == ServerMode.Authoritative ) {
+                byte[] byteData = mSerialize.PacketSerialize( packet );
+                slowClient.GetStream().Write( byteData, 0, byteData.Length );
+            } else if( Mode == ServerMode.Passive ) {
+                byte[] byteData = packet as byte[];
+                slowClient.GetStream().Write( byteData, 0, byteData.Length );
+            }
         }
 
         public void Dispose() {

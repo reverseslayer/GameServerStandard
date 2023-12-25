@@ -25,8 +25,8 @@ namespace MistoxServer {
             Console.WriteLine( "The client is initilized and trying to connect to the server at ip : " + mPEndPoint.Address );
             // Make a UDP connection to the server
             try {
-                FastUpdate = new mUDPClient( mPEndPoint );
-                FastUpdate.onReceived += onFastReceive;
+                FastUpdate = new mUDPClient( mPEndPoint, ServerMode.Authoritative );
+                FastUpdate.onReceived += (object o, EventArgs e) => { onFastReceive?.Invoke( o, e ); }; 
             } catch( Exception e ) {
                 Console.WriteLine( "An error has occured with the connection to the server. Error { " );
                 Console.WriteLine( e.ToString() );
@@ -35,7 +35,7 @@ namespace MistoxServer {
             // Make a TCP connection to the server
             try {
                 SlowUpdate = new mTCPClient( mPEndPoint );
-                SlowUpdate.onReceived += onSlowReceive;
+                SlowUpdate.onReceived += ( object o, EventArgs e ) => { onSlowReceive?.Invoke( o, e ); };
             } catch( Exception e ) {
                 Console.WriteLine( "An error has occured with the connection to the server. Error { " );
                 Console.WriteLine( e.ToString() );

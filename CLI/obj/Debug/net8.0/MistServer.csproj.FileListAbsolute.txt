@@ -4,7 +4,6 @@ F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MistServer.runtim
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MistServer.dll
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MistServer.pdb
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MsgPack.dll
-F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\Newtonsoft.Json.dll
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\System.CodeDom.dll
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MistServerModule.dll
 F:\Users\Derek\Desktop\GameServerStandard\CLI\bin\Debug\net8.0\MistServerModule.pdb

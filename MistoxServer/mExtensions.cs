@@ -1,10 +1,8 @@
 ﻿using System;
-using System.CodeDom;
 using System.IO;
 using System.Net;
 using System.Text;
 using MsgPack.Serialization;
-using Newtonsoft.Json;
 
 namespace MistoxServer {
 
@@ -60,7 +58,6 @@ namespace MistoxServer {
                             byte[] dataBytes = TBufferedData.Sub( (typeLength + 8), dataLength );
                             dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
                             TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
-                            Console.WriteLine( "Received Tcp : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
                             return data;
                         } else {
                             TBufferedData = TBufferedData.Sub( TotalLength, TBufferedData.Length - TotalLength );
@@ -85,7 +82,6 @@ namespace MistoxServer {
                             byte[] dataBytes = UBufferedData.Sub( (typeLength + 8), dataLength );
                             dynamic data = mSerialize.PacketDeserialize( typeData, dataBytes );
                             UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );
-                            Console.WriteLine( "Received UDP : " + JsonConvert.SerializeObject( data, Formatting.Indented ) );
                             return data;
                         } else {
                             UBufferedData = UBufferedData.Sub( TotalLength, UBufferedData.Length - TotalLength );

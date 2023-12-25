@@ -1,10 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using MistoxServer;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 //IP Range Updater
 
@@ -46,7 +43,7 @@ namespace MistoxServer.Client {
                             }
                         }
                     }
-                } catch( Exception e ) {
+                } catch( Exception ) {
                     Console.WriteLine( "You have disconnected from the server" );
                     Alive = false;
                 }

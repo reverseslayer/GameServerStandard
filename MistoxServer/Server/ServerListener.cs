@@ -1,5 +1,4 @@
-﻿using MistoxServer.Client;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -14,12 +13,14 @@ namespace MistoxServer.Server {
         public event EventHandler onReceive;
 
         TcpListener Listener;
+        ServerMode ServerMode;
         bool Alive;
         int port;
 
-        public mTCPListener( int Port ) {
+        public mTCPListener( int Port, ServerMode mode ) {
             port = Port;
             Alive = true;
+            ServerMode = mode;
             Thread ConnectionThread = new Thread(ListenerThread);
             ConnectionThread.Start();
         }
@@ -32,7 +33,7 @@ namespace MistoxServer.Server {
                 TcpClient client = Listener.AcceptTcpClient();
 
                 Connection user = new Connection(){
-                    slowClient = new mTCPServer(client),
+                    slowClient = new mTCPServer(client, ServerMode),
                     fastClient = new IPEndPoint( ((IPEndPoint)client.Client.RemoteEndPoint).Address, port ),
                     ID = new Random().Next(1, 10000000),
                 };

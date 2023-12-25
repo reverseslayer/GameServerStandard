@@ -3,7 +3,6 @@ using MistoxServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 
 namespace MistoxServer {
     public class ServerInterface : IMistoxServer {
@@ -15,12 +14,12 @@ namespace MistoxServer {
         public event EventHandler onSlowReceive;
         public event EventHandler onFastReceive;
 
-        public ServerInterface( int port ) {
-            FastUpdateServer = new mUDPClient( new IPEndPoint( IPAddress.IPv6Any, port ) );
-            SlowUpdateServer = new mTCPListener( port );
+        public ServerInterface( int port, ServerMode mode ) {
+            FastUpdateServer = new mUDPClient( new IPEndPoint( IPAddress.IPv6Any, port ), mode );
+            SlowUpdateServer = new mTCPListener( port, mode );
 
             SlowUpdateServer.onConnected += OnConnected;
-            FastUpdateServer.onReceived += onFastReceive;
+            FastUpdateServer.onReceived += ( object o, EventArgs e ) => { onFastReceive?.Invoke( o, e ); };
             SlowUpdateServer.onDisconnected += OnDisconnected;
 
             Console.WriteLine( "The Server is initilized and waiting for clients to connect at port : " + port );
@@ -28,7 +27,7 @@ namespace MistoxServer {
 
         void OnConnected( object sender, EventArgs e ) {
             Connection user = (Connection)sender;
-            user.slowClient.onReceived += onSlowReceive;
+            user.slowClient.onReceived+= ( object o, EventArgs e ) => { onSlowReceive?.Invoke( o, e ); };
             user.slowClient.onDisconnected += OnDisconnected;
             Connections.Add( user );
         }
