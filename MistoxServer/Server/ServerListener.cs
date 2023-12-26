@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 // Client Connections
 
@@ -21,15 +22,15 @@ namespace MistoxServer.Server {
             port = Port;
             Alive = true;
             ServerMode = mode;
-            Thread ConnectionThread = new Thread(ListenerThread);
+            Thread ConnectionThread = new Thread(async () => await ListenerThread() );
             ConnectionThread.Start();
         }
 
-        void ListenerThread() {
+        async Task ListenerThread() {
             Listener = new TcpListener( IPAddress.Any, port );
             Listener.Start();
             while( Alive ) {
-                TcpClient client = Listener.AcceptTcpClient();
+                TcpClient client = await Listener.AcceptTcpClientAsync();
 
                 Connection user = new Connection(){
                     slowClient = new mTCPServer(client, ServerMode),
@@ -43,7 +44,7 @@ namespace MistoxServer.Server {
                 user.slowClient.onDisconnected += onDisconnected;
                 user.slowClient.onReceived += onReceive;
 
-                Thread receiveThread = new Thread(() => user.slowClient.ReceiveThread(user));
+                Thread receiveThread = new Thread(async () => await user.slowClient.ReceiveThread(user) );
                 receiveThread.Start();
             }
         }

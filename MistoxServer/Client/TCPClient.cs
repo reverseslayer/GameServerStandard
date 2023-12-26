@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 //IP Range Updater
 
@@ -19,11 +20,11 @@ namespace MistoxServer.Client {
             Server.NoDelay = true;
             Server.Connect( ServerAddress );
             Alive = true;
-            Thread RThread = new Thread(ReceiveThread);
+            Thread RThread = new Thread(async () => { await ReceiveThread(); });
             RThread.Start();
         }
 
-        void ReceiveThread() {
+        async Task ReceiveThread() {
             using( NetworkStream ns = Server.GetStream() ) {
                 try {
                     while( Alive ) {
@@ -35,7 +36,7 @@ namespace MistoxServer.Client {
                             Alive = false;
                         }
                         byte[] StreamData = new byte[1024];
-                        int bytesRead = ns.Read(StreamData, 0, StreamData.Length);
+                        int bytesRead = await ns.ReadAsync(StreamData, 0, StreamData.Length);
                         if( bytesRead > 0 ) {
                             dynamic data = mSerialize.tReceive( StreamData.Sub( 0, bytesRead ) );
                             if( data != null ) {
@@ -50,9 +51,9 @@ namespace MistoxServer.Client {
             }
         }
 
-        public void Send<Packet>(Packet packet) {
+        public async Task Send<Packet>(Packet packet) {
             byte[] data = mSerialize.PacketSerialize( packet );
-            Server.GetStream().Write( data, 0, data.Length );
+            await Server.GetStream().WriteAsync( data, 0, data.Length );
         }
 
         public void Dispose() {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MistoxServer {
     public partial class mServer {
@@ -29,7 +30,7 @@ namespace MistoxServer {
 
         public event EventHandler onSlowReceive;
         public event EventHandler onFastReceive;
-        public void Send<Packet>(Packet data, SendType speed);
+        public Task Send<Packet>(Packet data, SendType speed);
 
     }
 

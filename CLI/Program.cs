@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using MistoxServer;
 
 namespace MistoxHolePunch {
@@ -39,28 +40,19 @@ namespace MistoxHolePunch {
         static int port = 7300;
         static ServerMode mode = ServerMode.Passive;
 
-        void RunServer() {
-            Console.Clear();
+        async Task RunServer() {
             serverObj = mServer.newServer( Convert.ToInt32( port ), mode );
             serverObj.onSlowReceive += slowReceive;
             serverObj.onFastReceive += fastReceive;
             while ( running ) {
-                string x = Console.ReadLine();
-                if( x.Length >= 4 ) {
-                    string result = x.Substring(0, 4);
-                    if( result == "slow" ) {
-                        serverObj.Send( x.Substring( 4 ), SendType.SlowUpdate );
-                    } else {
-                        serverObj.Send( x, SendType.FastUpdate );
-                    }
-                } else {
-                    serverObj.Send( x, SendType.FastUpdate );
-                }
+                // Stop this thread for 1 second so the CPU isnt 100%
+                // All the real work is on different threads
+                // While loop needs to exist so our main thread doesnt close
+                await Task.Delay( 1000 ); 
             }
         }
 
-        void RunClient() {
-            Console.Clear();
+        async Task RunClient() {
             serverObj = mServer.newClient( host, Convert.ToInt32( port ) );
             serverObj.onSlowReceive += slowReceive;
             serverObj.onFastReceive += fastReceive;
@@ -69,17 +61,17 @@ namespace MistoxHolePunch {
                 if( x.Length >= 4 ) {
                     string result = x.Substring(0, 4);
                     if( result == "slow" ) {
-                        serverObj.Send( x.Substring( 4 ), SendType.SlowUpdate );
+                        await serverObj.Send( x.Substring( 4 ), SendType.SlowUpdate );
                     } else {
-                        serverObj.Send( x, SendType.FastUpdate );
+                        await serverObj.Send( x, SendType.FastUpdate );
                     }
                 } else {
-                    serverObj.Send( x, SendType.FastUpdate );
+                    await serverObj.Send( x, SendType.FastUpdate );
                 }
             }
         }
 
-        static void Main(string[] args) {
+        static async Task Main(string[] args) {
             string Task = args.Length > 0 ? args[0].ToLower() : null;
 
             for( int i = 0; i < args.Length; i++ ) {
@@ -97,16 +89,16 @@ namespace MistoxHolePunch {
                 Console.WriteLine(HelpDocumentation.HelpText);
             } else if (Task == "/s" || Task == "-s") {
                 Program prog = new Program();
-                prog.RunServer();
+                await prog.RunServer();
             } else if (Task == "/c" || Task == "-c") {
                 Program prog = new Program();
-                prog.RunClient();
+                await prog.RunClient();
             } else {
                 host = "example.com";
                 port = 1500;
                 Program prog = new Program();
                 //prog.RunClient();
-                prog.RunServer();
+                await prog.RunServer();
             }
         }
 

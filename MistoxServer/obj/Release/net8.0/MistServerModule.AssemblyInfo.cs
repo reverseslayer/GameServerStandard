@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MistServerModule")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+85cdedad5d6d47ea2ef73d52273efb10f1a93f60")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e0b83a670795f00a6c25720ffe17c5992a90dab9")]
 [assembly: System.Reflection.AssemblyProductAttribute("MistServerModule")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MistServerModule")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

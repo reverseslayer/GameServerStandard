@@ -1,6 +1,7 @@
 ﻿using MistoxServer.Client;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MistoxServer {
     public class ClientInterface : IMistoxServer {
@@ -43,11 +44,11 @@ namespace MistoxServer {
             }
         }
 
-        public void Send<Packet>(Packet data, SendType speed) {
+        public async Task Send<Packet>(Packet data, SendType speed) {
             if (SendType.SlowUpdate == speed) {
-                SlowUpdate.Send( data );
+                await SlowUpdate.Send( data );
             } else {
-                FastUpdate.Send( data, mPEndPoint );
+                await FastUpdate.Send( data, mPEndPoint );
             }
         }
     }

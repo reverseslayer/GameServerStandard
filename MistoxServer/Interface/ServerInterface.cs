@@ -3,6 +3,7 @@ using MistoxServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MistoxServer {
     public class ServerInterface : IMistoxServer {
@@ -37,14 +38,14 @@ namespace MistoxServer {
             Connections.Remove( user );
         }
 
-        public void Send<Packet>( Packet data, SendType speed ) {
+        public async Task Send<Packet>( Packet data, SendType speed ) {
             if (speed == SendType.SlowUpdate) {
                 foreach( Connection cur in Connections ) {
-                    cur.slowClient.Send( data );
+                    await cur.slowClient.Send( data );
                 }
             } else {
                 foreach( Connection cur in Connections ) {
-                    FastUpdateServer.Send( data, cur.fastClient );
+                    await FastUpdateServer.Send( data, cur.fastClient );
                 }
             }
         }

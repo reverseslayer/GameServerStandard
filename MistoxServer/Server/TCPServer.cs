@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace MistoxServer.Server {
     public class mTCPServer : IDisposable {
@@ -16,12 +17,12 @@ namespace MistoxServer.Server {
         }
 
         bool Alive = true;
-        public void ReceiveThread( Connection Client ) {
+        public async Task ReceiveThread( Connection Client ) {
             bool connected = true;
             while( Alive && connected ) {
                 try {
                     byte[] StreamData = new byte[1024];
-                    int bytesRead = slowClient.GetStream().Read(StreamData, 0, StreamData.Length);
+                    int bytesRead = await slowClient.GetStream().ReadAsync(StreamData, 0, StreamData.Length);
                     if( bytesRead > 0 ) {
                         if ( Mode == ServerMode.Passive) {
                             onReceived?.Invoke( StreamData.Sub( 0, bytesRead ), new EventArgs() );
@@ -40,13 +41,13 @@ namespace MistoxServer.Server {
             }
         }
 
-        public void Send<T>( T packet ) {
+        public async Task Send<T>( T packet ) {
             if( Mode == ServerMode.Authoritative ) {
                 byte[] byteData = mSerialize.PacketSerialize( packet );
-                slowClient.GetStream().Write( byteData, 0, byteData.Length );
+                await slowClient.GetStream().WriteAsync( byteData, 0, byteData.Length );
             } else if( Mode == ServerMode.Passive ) {
                 byte[] byteData = packet as byte[];
-                slowClient.GetStream().Write( byteData, 0, byteData.Length );
+                await slowClient.GetStream().WriteAsync( byteData, 0, byteData.Length );
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 // Network Sync
 
@@ -23,15 +24,15 @@ namespace MistoxServer.Client {
             Alive = true;
             Port = ServerAddress.Port;
             Mode = mode;
-            Thread Client = new Thread(ReceiveThread);
+            Thread Client = new Thread(async() => { await ReceiveThread(); });
             Client.Start();
         }
 
-        void ReceiveThread() {
+        async Task ReceiveThread() {
             while( Alive ) {
                 try {
                     byte[] buffer = new byte[1024];
-                    int bytesRead = udpClient.Receive( buffer );
+                    int bytesRead = await udpClient.ReceiveAsync( buffer );
                     if (Mode == ServerMode.Passive) {
                         onReceived?.Invoke( buffer.Sub( 0, bytesRead ), new EventArgs() );
                     } else if (Mode == ServerMode.Authoritative) {
@@ -46,13 +47,13 @@ namespace MistoxServer.Client {
             }
         }
 
-        public void Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
+        public async Task Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
             if (Mode == ServerMode.Authoritative) {
                 byte[] byteData = mSerialize.PacketSerialize( Data );
-                udpClient.SendTo( byteData, new IPEndPoint( remoteHost.Address, Port ) );
+                await udpClient.SendToAsync( byteData, new IPEndPoint( remoteHost.Address, Port ) );
             } else if (Mode == ServerMode.Passive) {
                 byte[] byteData = Data as byte[];
-                udpClient.SendTo( byteData, new IPEndPoint( remoteHost.Address, Port ) );
+                await udpClient.SendToAsync( byteData, new IPEndPoint( remoteHost.Address, Port ) );
             }
         }
 
