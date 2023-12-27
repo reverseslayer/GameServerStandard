@@ -50,10 +50,10 @@ namespace MistoxServer.Client {
         public async Task Send<Packet>( Packet Data, IPEndPoint remoteHost ) {
             if (Mode == ServerMode.Authoritative) {
                 byte[] byteData = mSerialize.PacketSerialize( Data );
-                await udpClient.SendToAsync( byteData, new IPEndPoint( remoteHost.Address, Port ) );
+                await udpClient.SendToAsync( byteData, SocketFlags.None, new IPEndPoint( remoteHost.Address, Port ) );
             } else if (Mode == ServerMode.Passive) {
                 byte[] byteData = Data as byte[];
-                await udpClient.SendToAsync( byteData, new IPEndPoint( remoteHost.Address, Port ) );
+                await udpClient.SendToAsync( byteData, SocketFlags.None, new IPEndPoint( remoteHost.Address, Port ) );
             }
         }
 

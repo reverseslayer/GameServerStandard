@@ -34,8 +34,7 @@ namespace MistoxServer.Server {
 
                 Connection user = new Connection(){
                     slowClient = new mTCPServer(client, ServerMode),
-                    fastClient = new IPEndPoint( ((IPEndPoint)client.Client.RemoteEndPoint).Address, port ),
-                    ID = new Random().Next(1, 10000000),
+                    fastClient = new IPEndPoint( ((IPEndPoint)client.Client.RemoteEndPoint).Address, port )
                 };
 
                 Console.WriteLine( "New User Connected" );
