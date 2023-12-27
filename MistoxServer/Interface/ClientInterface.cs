@@ -10,8 +10,10 @@ namespace MistoxServer {
         mUDPClient FastUpdate;
         IPEndPoint mPEndPoint;
 
+        public event EventHandler onConnected;
         public event EventHandler onSlowReceive;
         public event EventHandler onFastReceive;
+        public event EventHandler onDisconnected;
 
         public ClientInterface( string IpOrHostName, int Port ) {
             // Get Server IP
@@ -36,7 +38,9 @@ namespace MistoxServer {
             // Make a TCP connection to the server
             try {
                 SlowUpdate = new mTCPClient( mPEndPoint );
+                SlowUpdate.onConnected += ( object o, EventArgs e ) => { onConnected?.Invoke( o, e ); };
                 SlowUpdate.onReceived += ( object o, EventArgs e ) => { onSlowReceive?.Invoke( o, e ); };
+                SlowUpdate.onDisconnected += ( object o, EventArgs e ) => { onDisconnected?.Invoke( o, e ); };
             } catch( Exception e ) {
                 Console.WriteLine( "An error has occured with the connection to the server. Error { " );
                 Console.WriteLine( e.ToString() );

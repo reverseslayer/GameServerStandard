@@ -11,7 +11,10 @@ namespace MistoxServer.Client {
 
         TcpClient Server;
 
+        public event EventHandler onConnected;
         public event EventHandler onReceived;
+        public event EventHandler onDisconnected;
+
         public bool Alive;
         bool notified = false;
 
@@ -30,9 +33,11 @@ namespace MistoxServer.Client {
                     while( Alive ) {
                         if( Server.Connected && !notified ) {
                             Console.WriteLine( "Connected to server" );
+                            onConnected?.Invoke( new object(), new EventArgs() );
                             notified = true;
                         } else if( !Server.Connected ) {
                             Console.WriteLine( "Disconnected from server" );
+                            onDisconnected?.Invoke( new object(), new EventArgs() );
                             Alive = false;
                         }
                         byte[] StreamData = new byte[1024];
@@ -46,6 +51,7 @@ namespace MistoxServer.Client {
                     }
                 } catch( Exception ) {
                     Console.WriteLine( "You have disconnected from the server" );
+                    onDisconnected?.Invoke( new object(), new EventArgs() );
                     Alive = false;
                 }
             }

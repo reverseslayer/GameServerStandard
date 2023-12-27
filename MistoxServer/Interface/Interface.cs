@@ -28,8 +28,11 @@ namespace MistoxServer {
 
     public interface IMistoxServer {
 
+        public event EventHandler onConnected;
         public event EventHandler onSlowReceive;
         public event EventHandler onFastReceive;
+        public event EventHandler onDisconnected;
+
         public Task Send<Packet>(Packet data, SendType speed);
 
     }

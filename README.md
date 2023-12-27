@@ -26,6 +26,22 @@ Sending data
 serverobj.Send( dynamic Object, SendType Speed )
 ```
 
+Connected and Disconnected
+```c#
+
+serverobj.onConnected += OnConnected;
+serverobj.onDisconnected += OnDisconnected;
+void OnConnected( object Data, EventArgs e ){
+  // Sender and e are always null
+  // Put on connected funtions here
+  // such as when connected spawn a player
+}
+void OnDisconnected( object Data, EventArgs e ){
+  // Sender and e are always null
+  // Put on disconnected funtions here
+  // such as when disconnected return to main menu
+}
+
 Receiving data
 ```c#
 

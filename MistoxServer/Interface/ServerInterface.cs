@@ -12,8 +12,10 @@ namespace MistoxServer {
         mTCPListener SlowUpdateServer;
         List<Connection> Connections = new List<Connection>();
 
+        public event EventHandler onConnected;
         public event EventHandler onSlowReceive;
         public event EventHandler onFastReceive;
+        public event EventHandler onDisconnected;
 
         public ServerInterface( int port, ServerMode mode ) {
             FastUpdateServer = new mUDPClient( new IPEndPoint( IPAddress.IPv6Any, port ), mode );
@@ -28,6 +30,7 @@ namespace MistoxServer {
 
         void OnConnected( object sender, EventArgs e ) {
             Connection user = (Connection)sender;
+            onConnected?.Invoke( sender, e );
             user.slowClient.onReceived+= ( object o, EventArgs e ) => { onSlowReceive?.Invoke( o, e ); };
             user.slowClient.onDisconnected += OnDisconnected;
             Connections.Add( user );
@@ -35,6 +38,7 @@ namespace MistoxServer {
 
         void OnDisconnected( object sender, EventArgs e ) {
             Connection user = (Connection)sender;
+            onDisconnected?.Invoke( sender, e );
             Connections.Remove( user );
         }
 

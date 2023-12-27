@@ -8,6 +8,11 @@ namespace MistoxHolePunch {
         static IMistoxServer serverObj;
         static bool running = true;
 
+        void onConnected( object sender, EventArgs e ) {
+            // sender and e are always null
+            // put connected functions in here
+        }
+
         void slowReceive( object obj, EventArgs e ) {
             if ( serverObj is ServerInterface ) {
                 // If ServerMode is passive obj is byte[] and Send takes in byte[]
@@ -36,14 +41,21 @@ namespace MistoxHolePunch {
             Console.WriteLine( obj );
         }
 
+        void onDisconnected( object sender, EventArgs e ) {
+            // sender and e are always null
+            // put disconnected functions in here
+        }
+
         static string host = "example.com";
         static int port = 7300;
         static ServerMode mode = ServerMode.Passive;
 
         async Task RunServer() {
             serverObj = mServer.newServer( Convert.ToInt32( port ), mode );
+            serverObj.onConnected += onConnected;
             serverObj.onSlowReceive += slowReceive;
             serverObj.onFastReceive += fastReceive;
+            serverObj.onDisconnected += onDisconnected;
             while ( running ) {
                 // Stop this thread for 1 second so the CPU isnt 100%
                 // All the real work is on different threads
@@ -54,20 +66,15 @@ namespace MistoxHolePunch {
 
         async Task RunClient() {
             serverObj = mServer.newClient( host, Convert.ToInt32( port ) );
+            serverObj.onConnected += onConnected;
             serverObj.onSlowReceive += slowReceive;
             serverObj.onFastReceive += fastReceive;
+            serverObj.onDisconnected += onDisconnected;
             while( running ) {
-                string x = Console.ReadLine();
-                if( x.Length >= 4 ) {
-                    string result = x.Substring(0, 4);
-                    if( result == "slow" ) {
-                        await serverObj.Send( x.Substring( 4 ), SendType.SlowUpdate );
-                    } else {
-                        await serverObj.Send( x, SendType.FastUpdate );
-                    }
-                } else {
-                    await serverObj.Send( x, SendType.FastUpdate );
-                }
+                // Stop this thread for 1 second so the CPU isnt 100%
+                // All the real work is on different threads
+                // While loop needs to exist so our main thread doesnt close
+                await Task.Delay( 1000 );
             }
         }
 

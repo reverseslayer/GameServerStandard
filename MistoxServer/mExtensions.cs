@@ -92,9 +92,4 @@ namespace MistoxServer {
             return null;
         }
     }
-
-    public class ConnectionPacket {
-        public string Name { get; set; }
-        public IPEndPoint clientHost { get; set; }
-    }
 }
