@@ -41,6 +41,7 @@ void OnDisconnected( object Data, EventArgs e ){
   // Put on disconnected funtions here
   // such as when disconnected return to main menu
 }
+```
 
 Receiving data
 ```c#
